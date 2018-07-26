@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block css %}
+<style>
+  #img_pre {
+    width: 1.8rem;
+    height: 1.8rem;
+    background-size: 100% 100%;
+    background-image: url("{{ static_url('img/img_add.png') }}");
+  }
+</style>
+{% end%}
+{% block body %}
+<header class="aui-bar aui-bar-nav" id="aui-header">
+  <a class="aui-pull-left" href="/">
+    <span class="aui-iconfont aui-icon-left"></span>back
+  </a>
+  <div class="aui-title">registe</div>
+</header>
+<div class="aui-content aui-margin-b-15">
+  <ul class="aui-list aui-form-list">
+    <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+        <div class="aui-list-item-label">
+          Email
+        </div>
+        <div class="aui-list-item-input">
+          <input type="email" name="email">
+        </div>
+      </div>
+    </li>
+    <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+        <div class="aui-list-item-label">
+          Password
+        </div>
+        <div class="aui-list-item-input">
+          <input type="password" name="password">
+        </div>
+      </div>
+    </li>
+    <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+        <div class="aui-list-item-label">
+          HeadImage
+        </div>
+        <div class="aui-list-item-input">
+          <label for="head_img_id" class="aui-pull-right">
+            <div id="img_pre"></div>
+          </label>
+          <input id="head_img_id" type="file" name="head_img" style="display: none">
+        </div>
+      </div>
+    </li>
+    <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+        <div class="aui-list-item-label">
+          NickName
+        </div>
+        <div class="aui-list-item-input">
+          <input type="text" name="nickname">
+        </div>
+      </div>
+    </li>
+    <li class="aui-list-item">
+      <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
+        <div class="aui-btn aui-btn-block">submit</div>
+      </div>
+    </li>
+  </ul>
+</div>
+{% end %}
+{% block js %}
+<script src='{{ static_url("js/jquery-2.1.4.min.js") }}'></script>
+<script>
+    $(function () {
+        $("input[type='file']").change(function () {
+            var reader = new FileReader()
+            reader.onload = function (e) {
+                $("#img_pre").css("background-image", "url(" + e.target.result + ")")
+            }
+            reader.readAsDataURL(this.files[0]);
+        })
+    });
+</script>
+{% end %}

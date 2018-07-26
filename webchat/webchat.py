@@ -21,8 +21,17 @@ class LoginHandler(BaseHandler):
         self.render('login.html')
 
 
+class RegisteHandler(BaseHandler):
+    def get(self, *args, **kwargs):
+        self.render('registe.html')
+
+
 if __name__ == '__main__':
-    handlers = [(r'/', HomeHandler), (r'/login', LoginHandler)]
+    handlers = [
+        (r'/', HomeHandler),
+        (r'/login', LoginHandler),
+        (r'/registe', RegisteHandler)
+    ]
     settings = dict(
         debug=True, autoreload=False,
         template_path=os.path.join(BASE_DIR, 'templates'),
