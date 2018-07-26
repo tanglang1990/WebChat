@@ -16,7 +16,8 @@
   </a>
   <div class="aui-title">registe</div>
 </header>
-<div class="aui-content aui-margin-b-15">
+{% include 'error.html' %}
+<form id="formId" method="post" enctype="multipart/form-data" class="aui-content aui-margin-b-15">
   <ul class="aui-list aui-form-list">
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
@@ -63,11 +64,11 @@
     </li>
     <li class="aui-list-item">
       <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
-        <div class="aui-btn aui-btn-block">submit</div>
+        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">submit</div>
       </div>
     </li>
   </ul>
-</div>
+</form>
 {% end %}
 {% block js %}
 <script src='{{ static_url("js/jquery-2.1.4.min.js") }}'></script>
