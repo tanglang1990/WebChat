@@ -61,7 +61,7 @@ class RegisteHandler(BaseHandler):
         req_files = self.request.files.get('head_img', [])
 
         # 数据校验
-        if not email or not password or len(req_files)==0:
+        if not email or not password or len(req_files) == 0:
             self.render("registe.html", error='Error input infomation')
             return
 
@@ -92,10 +92,11 @@ if __name__ == '__main__':
         (r'/', HomeHandler),
         (r'/login', LoginHandler),
         (r'/registe', RegisteHandler),
-        (r"/meida/(.*)", tornado.web.StaticFileHandler, {"path": "meida"})
+        (r'/media/(.*)', tornado.web.StaticFileHandler, {'path': os.path.join(BASE_DIR, 'media')})
     ]
     settings = dict(
-        debug=True, autoreload=False,
+        debug=True,
+        autoreload=False,
         template_path=os.path.join(BASE_DIR, 'templates'),
         static_path=os.path.join(BASE_DIR, 'static'),
         login_url='/login',
