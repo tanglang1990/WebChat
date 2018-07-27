@@ -12,9 +12,9 @@
 {% block body %}
 <header class="aui-bar aui-bar-nav" id="aui-header">
   <a class="aui-pull-left" href="/">
-    <span class="aui-iconfont aui-icon-left"></span>back
+    <span class="aui-iconfont aui-icon-left"></span>{{ locale.translate('back') }}
   </a>
-  <div class="aui-title">registe</div>
+  <div class="aui-title">{{ locale.translate('registe') }}</div>
 </header>
 {% include 'error.html' %}
 <form id="formId" method="post" enctype="multipart/form-data" class="aui-content aui-margin-b-15">
@@ -22,7 +22,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          Email
+          {{ locale.translate('Email') }}
         </div>
         <div class="aui-list-item-input">
           <input type="email" name="email">
@@ -32,7 +32,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          Password
+          {{ locale.translate('Password') }}
         </div>
         <div class="aui-list-item-input">
           <input type="password" name="password">
@@ -42,7 +42,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          HeadImage
+          {{ locale.translate('HeadImage') }}
         </div>
         <div class="aui-list-item-input">
           <label for="head_img_id" class="aui-pull-right">
@@ -55,7 +55,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          NickName
+          {{ locale.translate('NickName') }}
         </div>
         <div class="aui-list-item-input">
           <input type="text" name="nickname">
@@ -64,7 +64,9 @@
     </li>
     <li class="aui-list-item">
       <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
-        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">submit</div>
+        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">{{
+          locale.translate('submit') }}
+        </div>
       </div>
     </li>
   </ul>

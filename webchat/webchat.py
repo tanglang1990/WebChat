@@ -99,7 +99,7 @@ class LoginHandler(CommonBaseHandler):
             self.set_secure_cookie(USER_COOKIE_KEY, email)
             self.redirect(self.get_argument("next", "/"))
         else:
-            self.render(self.template_name, error="Incorrect Password")
+            self.render(self.template_name, error="Email or password error")
 
 
 class LogoutHandler(CommonBaseHandler):
@@ -218,6 +218,10 @@ if __name__ == '__main__':
         login_url='/login',
         cookie_secret='TODO random a cookie_secret'
     )
+
+    tornado.locale.load_translations(os.path.join(BASE_DIR, 'locales'))
+    tornado.locale.set_default_locale('en')
+
     application = tornado.web.Application(handlers=handlers, **settings)
     application.listen(options.port)
     logging.info(f'application port is {options.port}')

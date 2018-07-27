@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block body %}
 <header class="aui-bar aui-bar-nav" id="aui-header">
-  <div class="aui-title">login</div>
+  <div class="aui-title">{{ locale.translate('login') }}</div>
 </header>
 {% include 'error.html' %}
 <form id="formId" class="aui-content aui-margin-b-15" method="post">
@@ -9,7 +9,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          Email
+          {{ locale.translate('Email') }}
         </div>
         <div class="aui-list-item-input">
           <input type="text" name="email">
@@ -19,7 +19,7 @@
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-label">
-          Password
+          {{ locale.translate('Password') }}
         </div>
         <div class="aui-list-item-input">
           <input type="password" name="password">
@@ -28,12 +28,14 @@
     </li>
     <li class="aui-list-item">
       <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
-        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">submit</div>
+        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">
+          {{ locale.translate('submit') }}
+        </div>
       </div>
     </li>
   </ul>
   <div class="aui-text-center aui-margin-5">
-    <a href="/registe">No account, Create one now</a>
+    <a href="/registe">{{ locale.translate('No account') }}, {{ locale.translate('Create one now') }}</a>
   </div>
 </form>
 {% end %}
