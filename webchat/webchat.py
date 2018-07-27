@@ -50,7 +50,7 @@ class HomeHandler(BaseHandler):
     @tornado.gen.coroutine
     def get(self, *args, **kwargs):
         user_dict = yield self.get_current_user_dict()
-        self.render('home.html')
+        self.render('home.html', error=None)
 
 
 class LoginHandler(BaseHandler):
@@ -89,6 +89,12 @@ class LoginHandler(BaseHandler):
             self.redirect(self.get_argument("next", "/"))
         else:
             self.render(self.template_name, error="Incorrect Password")
+
+
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie(USER_COOKIE_KEY)
+        self.redirect('/')
 
 
 class RegisteHandler(BaseHandler):
@@ -141,6 +147,7 @@ if __name__ == '__main__':
     handlers = [
         (r'/', HomeHandler),
         (r'/login', LoginHandler),
+        (r'/logout', LogoutHandler),
         (r'/registe', RegisteHandler),
         (r'/media/(.*)', tornado.web.StaticFileHandler, {'path': os.path.join(BASE_DIR, 'media')})
     ]
