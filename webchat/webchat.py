@@ -93,8 +93,12 @@ class LoginHandler(BaseHandler):
 
 
 class RegisteHandler(BaseHandler):
+
+    def initialize(self):
+        self.template_name = 'registe.html'
+
     def get(self, *args, **kwargs):
-        self.render('registe.html', error=None)
+        self.render(self.template_name, error=None)
 
     async def is_email_user_exists(self, email):
         cursor = await POOL.execute('SELECT * FROM users where email =%s',
@@ -109,12 +113,12 @@ class RegisteHandler(BaseHandler):
 
         # 数据校验
         if not email or not password or len(req_files) == 0:
-            self.render("registe.html", error='Error input infomation')
+            self.render(self.template_name, error='Error input infomation')
             return
 
         if await self.is_email_user_exists(email):
             is_existed = self.locale.translate('is existed')
-            self.render("create_user.html",
+            self.render(self.template_name,
                         error="%s %s" % (email, is_existed))
             return
 
