@@ -50,8 +50,7 @@ class HomeHandler(BaseHandler):
     @tornado.gen.coroutine
     def get(self, *args, **kwargs):
         user_dict = yield self.get_current_user_dict()
-        print(user_dict)
-        self.write(user_dict)
+        self.render('home.html')
 
 
 class LoginHandler(BaseHandler):
@@ -155,4 +154,5 @@ if __name__ == '__main__':
     )
     application = tornado.web.Application(handlers=handlers, **settings)
     application.listen(options.port)
+    logging.info(f'application port is {options.port}')
     tornado.ioloop.IOLoop.instance().start()
