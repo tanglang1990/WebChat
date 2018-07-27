@@ -5,6 +5,7 @@ import bcrypt
 import tornado.web
 import tornado.ioloop
 import tornado.gen
+import tornado.websocket
 from tornado.options import define, options
 from tornado_mysql import pools
 from tornado_mysql.cursors import DictCursor
@@ -30,21 +31,31 @@ MEDIA_URL = '\media'
 USER_COOKIE_KEY = 'userkey'
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler:
+    def initialize(self):
+        self.current_user_dict = None
 
     def get_current_user(self):
         return self.get_secure_cookie(USER_COOKIE_KEY)
 
     @tornado.gen.coroutine
-    def get_current_user_dict(self):
-        if not self.current_user:
+    def get_current_user_dict(self, with_password=False):
+        if self.current_user_dict:
+            return self.current_user_dict
+        elif not self.current_user:
             return None
         else:
-            user_dict = yield POOL.execute('select * from users where email = %s', self.current_user)
-            return user_dict.fetchone()
+            sql = 'select * from users where email = %s' if with_password else 'select id, nickname, email, head_img  from users where email = %s'
+            cursor = yield POOL.execute(sql, self.current_user)
+            self.current_user_dict = cursor.fetchone()
+            return self.current_user_dict
 
 
-class HomeHandler(BaseHandler):
+class CommonBaseHandler(BaseHandler, tornado.web.RequestHandler):
+    pass
+
+
+class HomeHandler(CommonBaseHandler):
 
     @tornado.web.authenticated
     @tornado.gen.coroutine
@@ -53,9 +64,9 @@ class HomeHandler(BaseHandler):
         self.render('home.html', error=None)
 
 
-class LoginHandler(BaseHandler):
+class LoginHandler(CommonBaseHandler):
 
-    def initialize(self):
+    def initialize(self, *args, **kwargs):
         self.template_name = 'login.html'
 
     def get(self, *args, **kwargs):
@@ -91,13 +102,13 @@ class LoginHandler(BaseHandler):
             self.render(self.template_name, error="Incorrect Password")
 
 
-class LogoutHandler(BaseHandler):
+class LogoutHandler(CommonBaseHandler):
     def get(self):
         self.clear_cookie(USER_COOKIE_KEY)
         self.redirect('/')
 
 
-class RegisteHandler(BaseHandler):
+class RegisteHandler(CommonBaseHandler):
 
     def initialize(self):
         self.template_name = 'registe.html'
@@ -143,9 +154,57 @@ class RegisteHandler(BaseHandler):
         self.redirect(self.get_argument("next", "/"))
 
 
+class ChatHandler(BaseHandler, tornado.websocket.WebSocketHandler):
+    # 存放所有的socket连接
+    waiters = set()
+    # 存放消息
+    cache = []
+    # 存放最大的消息记录数
+    cache_size = 200
+
+    # 创建连接时触发
+    async def open(self):
+        ChatHandler.waiters.add(self)
+        # 将用户id发给前端
+        user_dict = await self.get_current_user_dict()
+        self.write_message(str(user_dict.get('id')))
+        # 将历史消息发给前端
+        for msg in ChatHandler.cache:
+            self.write_message(msg)
+
+    # 收到消息是触发
+    async def on_message(self, message):
+        user_dict = await self.get_current_user_dict()
+        msg = {'user': user_dict, 'content': message}
+        ChatHandler.update_cache(msg)
+        ChatHandler.send_updates(msg)
+
+    # 更新消息记录
+    @classmethod
+    def update_cache(cls, chat):
+        cls.cache.append(chat)
+        if len(cls.cache) > cls.cache_size:
+            cls.cache = cls.cache[-cls.cache_size:]
+
+    # 发送消息给所有用户
+    @classmethod
+    def send_updates(cls, msg):
+        logging.info("sending message to %d waiters", len(cls.waiters))
+        for waiter in cls.waiters:
+            try:
+                waiter.write_message(msg)
+            except:
+                logging.error("Error sending message", exc_info=True)
+
+    # 断开连接时触发
+    def on_close(self):
+        ChatHandler.waiters.remove(self)
+
+
 if __name__ == '__main__':
     handlers = [
         (r'/', HomeHandler),
+        (r'/chat', ChatHandler),
         (r'/login', LoginHandler),
         (r'/logout', LogoutHandler),
         (r'/registe', RegisteHandler),

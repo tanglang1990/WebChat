@@ -4,44 +4,115 @@
   <a class="aui-btn aui-pull-right" tapmode href="/logout">logout</a>
   <div class="aui-title">Chat</div>
 </header>
-<section class="aui-chat">
-  <div class="aui-chat-header">2016年7月13日</div>
-  <div class="aui-chat-item aui-chat-left">
-    <div class="aui-chat-media">
-      <img src="{{ static_url('img/dn.png') }}"/>
-    </div>
-    <div class="aui-chat-inner">
-      <div class="aui-chat-name">AUI</div>
-      <div class="aui-chat-content">
-        <div class="aui-chat-arrow"></div>
-        Hello AUI 2.0!
-      </div>
-    </div>
-  </div>
-  <div class="aui-chat-item aui-chat-right">
-    <div class="aui-chat-media">
-      <img src="{{ static_url('img/dn.png') }}"/>
-    </div>
-    <div class="aui-chat-inner">
-      <div class="aui-chat-name">流浪男</div>
-      <div class="aui-chat-content">
-        <div class="aui-chat-arrow"></div>
-        你好！
-      </div>
-
-    </div>
-  </div>
+<section class="aui-chat" id="container">
+  <!--<div class="aui-chat-header">2016年7月13日</div>-->
+  <!--<div class="aui-chat-item aui-chat-left">-->
+    <!--<div class="aui-chat-media">-->
+      <!--<img src="{{ static_url('img/dn.png') }}"/>-->
+    <!--</div>-->
+    <!--<div class="aui-chat-inner">-->
+      <!--<div class="aui-chat-name">AUI</div>-->
+      <!--<div class="aui-chat-content">-->
+        <!--<div class="aui-chat-arrow"></div>-->
+        <!--Hello AUI 2.0!-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
+  <!--<div class="aui-chat-item aui-chat-right">-->
+    <!--<div class="aui-chat-media">-->
+      <!--<img src="{{ static_url('img/dn.png') }}"/>-->
+    <!--</div>-->
+    <!--<div class="aui-chat-inner">-->
+      <!--<div class="aui-chat-name">流浪男</div>-->
+      <!--<div class="aui-chat-content">-->
+        <!--<div class="aui-chat-arrow"></div>-->
+        <!--你好！-->
+      <!--</div>-->
+    <!--</div>-->
+  <!--</div>-->
 </section>
 <footer class="aui-bar aui-bar-tab" id="footer">
   <div class="aui-list aui-form-list">
     <div class="aui-list-item">
       <div class="aui-list-item-inner">
         <div class="aui-list-item-input">
-          <textarea placeholder="Please enter something to send"></textarea>
+          <textarea id="txt" placeholder="Please enter something to send"></textarea>
         </div>
-        <div class="aui-btn aui-margin-r-5">submit</div>
+        <div class="aui-btn aui-margin-r-5" onclick="sendMsg()">submit</div>
       </div>
     </div>
   </div>
 </footer>
+<script src='{{ static_url("js/jquery-2.1.4.min.js") }}'></script>
+<script>
+    $(function () {
+        wsUpdater.start();
+    });
+
+    var wsUpdater = {
+        socket: null,
+        userid: null,
+        start: function () {
+            var url = "ws://" + location.host + "/chat";
+            wsUpdater.socket = new WebSocket(url);
+            wsUpdater.socket.onmessage = function (event) {
+                console.log('收到消息............')
+                console.log(event.data)
+                if (wsUpdater.userid) {
+                    wsUpdater.showMessage(event.data);
+                } else {
+                    wsUpdater.userid = event.data;
+                }
+            }
+        },
+        showMessage: function (msg) {
+            if (typeof(msg) == 'string') {
+                msg = JSON.parse(msg);
+            }
+            var from_user = msg.user;
+            var from_userid = from_user.id;
+            if (from_userid != this.userid) {
+                content = '<div class="aui-chat-item aui-chat-left">' +
+                    '<div class="aui-chat-media">' +
+                    ' <img src="' + from_user.head_img + '"/>' +
+                    '</div>' +
+                    '<div class="aui-chat-inner">' +
+                    ' <div class="aui-chat-name">' + from_user.email + '</span>' +
+                    ' </div>' +
+                    ' <div class="aui-chat-content">' +
+                    '   <div class="aui-chat-arrow"></div>' + msg.content +
+                    ' </div>' +
+                    ' <div class="aui-chat-status aui-chat-status-refresh">' +
+                    '   <i class="aui-iconfont aui-icon-correct aui-text-success"></i>' +
+                    ' </div>' +
+                    '</div>' +
+                    '</div>';
+            } else {
+                content = '<div class="aui-chat-item aui-chat-right">' +
+                    '  <div class="aui-chat-media">' +
+                    '    <img src="' + from_user.head_img + '"/>' +
+                    '  </div>' +
+                    '  <div class="aui-chat-inner">' +
+                    '    <div class="aui-chat-name">' + from_user.email + '</div>' +
+                    '    <div class="aui-chat-content">' +
+                    '      <div class="aui-chat-arrow"></div>' + msg.content +
+                    '    </div>' +
+                    '  </div>' +
+                    '</div>' +
+                    '</section>';
+            }
+            $('#container').append(content);
+        }
+    };
+
+    function sendMsg() {
+        var content = $("#txt").val();
+        if (!content) {
+            alert('Please enter something!');
+            return false;
+        }
+        wsUpdater.socket.send(content);
+        $("#txt").val('');
+    }
+</script>
 {% end %}
