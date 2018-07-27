@@ -1,4 +1,5 @@
 import os
+import logging
 
 import bcrypt
 import tornado.web
@@ -25,24 +26,70 @@ ConnParm = {'host': options.db_host, 'port': options.db_port,
 POOL = pools.Pool(ConnParm, max_idle_connections=1, max_recycle_sec=3)
 BASE_DIR = os.path.dirname(__file__)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media'
-USER_COOKIE_KEY = 'userid'
+MEDIA_URL = '\media'
+USER_COOKIE_KEY = 'userkey'
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    pass
+
+    def get_current_user(self):
+        return self.get_secure_cookie(USER_COOKIE_KEY)
+
+    @tornado.gen.coroutine
+    def get_current_user_dict(self):
+        if not self.current_user:
+            return None
+        else:
+            user_dict = yield POOL.execute('select * from users where email = %s', self.current_user)
+            return user_dict.fetchone()
 
 
 class HomeHandler(BaseHandler):
 
     @tornado.web.authenticated
+    @tornado.gen.coroutine
     def get(self, *args, **kwargs):
-        self.write('home')
+        user_dict = yield self.get_current_user_dict()
+        print(user_dict)
+        self.write(user_dict)
 
 
 class LoginHandler(BaseHandler):
+
+    def initialize(self):
+        self.template_name = 'login.html'
+
     def get(self, *args, **kwargs):
-        self.render('login.html')
+        self.render(self.template_name, error=None)
+
+    async def post(self, *args, **kwargs):
+        email = self.get_argument('email')
+        password = self.get_argument('password')
+
+        # 数据校验
+        if not email or not password:
+            self.render(self.template_name, error='Error input infomation')
+            return
+
+        cursor = await POOL.execute(
+            "SELECT id, nickname, email, password FROM users WHERE email = %s",
+            email)
+        if cursor.rowcount == 0:
+            self.render(self.template_name, error="Email or password error")
+            return
+
+        # 验证密码
+        user_dict = cursor.fetchone()
+        user_password = user_dict.get('password')
+        hashed_password = await tornado.ioloop.IOLoop.current().run_in_executor(
+            None, bcrypt.hashpw, tornado.escape.utf8(password),
+            tornado.escape.utf8(user_password))
+        hashed_password = tornado.escape.to_unicode(hashed_password)
+        if hashed_password == user_password:
+            self.set_secure_cookie(USER_COOKIE_KEY, email)
+            self.redirect(self.get_argument("next", "/"))
+        else:
+            self.render(self.template_name, error="Incorrect Password")
 
 
 class RegisteHandler(BaseHandler):
@@ -76,7 +123,7 @@ class RegisteHandler(BaseHandler):
         head_img_url = os.path.join(MEDIA_URL, head_img)
 
         hashed_password = await tornado.ioloop.IOLoop.current().run_in_executor(
-            None, bcrypt.hashpw, tornado.escape.utf8(self.get_argument("password")),
+            None, bcrypt.hashpw, tornado.escape.utf8(password),
             bcrypt.gensalt())
 
         await POOL.execute(

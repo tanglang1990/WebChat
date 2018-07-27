@@ -3,7 +3,8 @@
 <header class="aui-bar aui-bar-nav" id="aui-header">
   <div class="aui-title">login</div>
 </header>
-<div class="aui-content aui-margin-b-15">
+{% include 'error.html' %}
+<form id="formId" class="aui-content aui-margin-b-15" method="post">
   <ul class="aui-list aui-form-list">
     <li class="aui-list-item">
       <div class="aui-list-item-inner">
@@ -27,12 +28,12 @@
     </li>
     <li class="aui-list-item">
       <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
-        <div class="aui-btn aui-btn-block">submit</div>
+        <div class="aui-btn aui-btn-block" onclick="javascript:document.getElementById('formId').submit()">submit</div>
       </div>
     </li>
   </ul>
   <div class="aui-text-center aui-margin-5">
     <a href="/registe">No account, Create one now</a>
   </div>
-</div>
+</form>
 {% end %}
